@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func main() {
-	fmt.Println("Stock Price Viewer")
-}
+	for {
+		ticker, err := displayCLI()
+		if errors.Is(err, ErrExit) {
+			fmt.Println("Goodbye!")
+			return
+		}
+		fmt.Println(ticker)
+	}
+
+} //main
