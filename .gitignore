@@ -1,0 +1,4 @@
+.env
+/stockviewer
+/cmd/stockviewer/stockviewer
+/bin/
