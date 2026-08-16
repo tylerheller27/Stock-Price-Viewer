@@ -8,6 +8,7 @@ import (
 func main() {
 
 	fmt.Println("Please Enter A Stock Ticker")
+	fmt.Println("Please Type Exit to Terminate Program")
 
 	for {
 		ticker, err := displayCLI()
@@ -23,7 +24,7 @@ func main() {
 		} else {
 			fmt.Println("Please Enter A Valid ticker")
 		}
-		
+
 		fmt.Printf("Ticker: %v\n", ticker)
 	}
 
