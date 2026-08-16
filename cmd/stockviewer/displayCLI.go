@@ -15,10 +15,13 @@ func displayCLI() (string, error) {
 	scanner.Scan()
 	userInput := scanner.Text()
 
-	exitString := strings.ToUpper(userInput)
+	exitString := strings.ToLower(userInput)
 
-	//checking to see if user typed "Exit" so we can termineate the program.
-	if exitString == "EXIT" {
+	// Use a sentinel error to represent the intentional "EXIT" control-flow
+	// path. The caller can detect this with errors.Is(err, ErrExit) and
+	// stop the loop without treating it as regular input.
+
+	if exitString == "exit" {
 		return "", ErrExit
 	}
 

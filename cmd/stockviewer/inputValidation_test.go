@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
 
@@ -72,5 +73,28 @@ func TestInputValidation_whitespace(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
+	}
+}
+
+func TestDisplayCLI_ExitIgnoresCase(t *testing.T) {
+	oldStdin := os.Stdin
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe() error = %v", err)
+	}
+	_, err = w.WriteString("exit\n")
+	if err != nil {
+		t.Fatalf("WriteString() error = %v", err)
+	}
+	w.Close()
+	os.Stdin = r
+	defer func() { os.Stdin = oldStdin }()
+
+	_, err = displayCLI()
+	if err == nil {
+		t.Fatal("expected ErrExit for lowercase exit input")
+	}
+	if err != ErrExit {
+		t.Fatalf("expected ErrExit, got %v", err)
 	}
 }
