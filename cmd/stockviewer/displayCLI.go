@@ -3,16 +3,21 @@ package main
 import (
 	"bufio"
 	"errors"
-	"os"
 	"strings"
 )
 
 var ErrExit = errors.New("user requested exit")
 
-func displayCLI() (string, error) {
+func displayCLI(scanner *bufio.Scanner) (string, error) {
 
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
+	// scanner.Scan() returns false when there's no more input (EOF) — e.g.
+	// the user hits Ctrl+D, or piped input runs out. This used to go
+	// unchecked, which caused an infinite loop: once Scan() starts failing,
+	// Text() silently keeps returning "", which never matches "exit" below,
+	// so the program never terminated.
+	if !scanner.Scan() {
+		return "", ErrExit
+	}
 	userInput := scanner.Text()
 
 	exitString := strings.ToLower(userInput)
