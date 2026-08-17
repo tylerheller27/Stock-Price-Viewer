@@ -57,9 +57,13 @@ func main() {
 		//sends valid ticker and api key to getQuote function to build the request
 		//and send the request out
 
-		getQuote(ticker, apiKey) // this is not fully built out so it should just diplay the url
+		quote, err := getQuote(ticker, apiKey)
+		if err != nil {
+			fmt.Println("Error fetching quote:", err)
+			continue
+		}
 
-		//fmt.Println(apiKey) //using apiKey so the program compiles.. delete later
+		printStockInfo(ticker, quote)
 
 	} //for
 
