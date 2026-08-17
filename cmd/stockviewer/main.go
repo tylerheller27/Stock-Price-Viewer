@@ -59,7 +59,11 @@ func main() {
 
 		quote, err := getQuote(ticker, apiKey)
 		if err != nil {
-			fmt.Println("Error fetching quote:", err)
+			if errors.Is(err, ErrTickerNotFound) {
+				fmt.Println("Ticker not found")
+			} else {
+				fmt.Println("Error fetching quote:", err)
+			}
 			continue
 		}
 

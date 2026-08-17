@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,6 +36,26 @@ func TestGetQuote_workingCase(t *testing.T) {
 	}
 	if got != want {
 		t.Errorf("getQuote() = %+v, want %+v", got, want)
+	}
+} //func
+
+func TestGetQuote_notFound(t *testing.T) {
+
+	//fake server returning Finnhub's real "unknown ticker" shape: 200 OK
+	//with every price field at 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"c":0,"d":null,"dp":null,"h":0,"l":0,"o":0,"pc":0,"t":0}`))
+	}))
+	defer server.Close()
+
+	original := finnhubBaseURL
+	finnhubBaseURL = server.URL
+	defer func() { finnhubBaseURL = original }()
+
+	_, err := getQuote("ZZZZZ", "test-key")
+
+	if !errors.Is(err, ErrTickerNotFound) {
+		t.Fatalf("getQuote() error = %v, want ErrTickerNotFound", err)
 	}
 } //func
 

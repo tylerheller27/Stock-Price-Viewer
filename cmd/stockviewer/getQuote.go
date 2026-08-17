@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,11 @@ import (
 )
 
 var finnhubBaseURL = "https://finnhub.io/api/v1" //used in testing
+
+// Finnhub doesn't return an HTTP error for an unknown ticker -- it responds
+// with 200 OK and every price field set to 0 instead. ErrTickerNotFound lets
+// getQuote surface that as a distinct, checkable error via errors.Is.
+var ErrTickerNotFound = errors.New("ticker not found")
 
 type Quote struct {
 	Current            float64 `json:"c"`
@@ -62,5 +68,13 @@ func getQuote(ticker string, apiKey string) (Quote, error) {
 	// json.Unmarshal matches JSON keys ("c", "h", etc.) to the struct's
 	// `json:"..."` tags. Any JSON field without a matching tag (like
 	// Finnhub's timestamp "t") is just silently ignored.
+
+	// Checking multiple fields (not just Current) makes this more robust
+	// against a single stray zero -- a real ticker is extremely unlikely
+	// to have every one of these fields be exactly 0 at once.
+	if quote.Current == 0 && quote.High == 0 && quote.Low == 0 && quote.OpenPrice == 0 && quote.PreviousClosePrice == 0 {
+		return Quote{}, ErrTickerNotFound
+	}
+
 	return quote, nil
 }
