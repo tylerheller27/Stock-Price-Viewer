@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"strings"
 	"testing"
 )
 
@@ -74,17 +72,5 @@ func TestInputValidation_whitespace(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
-	}
-}
-
-func TestDisplayCLI_ExitIgnoresCase(t *testing.T) {
-	scanner := bufio.NewScanner(strings.NewReader("exit\n"))
-
-	_, err := displayCLI(scanner)
-	if err == nil {
-		t.Fatal("expected ErrExit for lowercase exit input")
-	}
-	if err != ErrExit {
-		t.Fatalf("expected ErrExit, got %v", err)
 	}
 }

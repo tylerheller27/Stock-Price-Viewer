@@ -55,6 +55,18 @@ func TestDisplayCLI_emptyLine(t *testing.T) {
 	}
 } //func
 
+func TestDisplayCLI_ExitIgnoresCase(t *testing.T) {
+	scanner := bufio.NewScanner(strings.NewReader("exit\n"))
+
+	_, err := displayCLI(scanner)
+	if err == nil {
+		t.Fatal("expected ErrExit for lowercase exit input")
+	}
+	if err != ErrExit {
+		t.Fatalf("expected ErrExit, got %v", err)
+	}
+}
+
 func TestDisplayCLI_whitespaceOnly(t *testing.T) {
 
 	//displayCLI doesn't trim whitespace -- it should come back unchanged,
