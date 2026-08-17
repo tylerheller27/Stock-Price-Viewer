@@ -20,17 +20,20 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	// loading api key from config.go
-	apiKey, err := loadAPIKey() // loading api key from config.go
+	apiKey, err := loadAPIKey() // loading api key from env variable from config.go
 
-	//checking to see if API key is empty and terminating program if itis
+	//checking to see if API key is empty and terminating program if it is
 	if errors.Is(err, ErrMissingAPIKey) {
 		fmt.Println("no API key loaded in env file, terminating program")
 		return
 	}
 
+	//for loop to continually ask for user input unless an error terminates the program
+	// ex: user types in exit or apiKey env is empty
+
 	for {
 
-		//calling DisplayCLI function to get user input of a stock ticker
+		//calling displayCLI function to get user input of a stock ticker
 		ticker, err := displayCLI(scanner)
 
 		//looking for user response "exit" to terminate program
@@ -39,18 +42,20 @@ func main() {
 			return
 		}
 
-		//sending user input to isValidTicker function to check if thier response
-		// is betweeen 1-5 character & all caracters are letters
-		// returns true if its a valid ticker
+		//sending user input to isValidTicker function to check if their response
+		// is between 1-5 characters & all characters are letters
+		// returns true if it's a valid ticker
+
 		if !isValidTicker(ticker) {
 			fmt.Println("Please Enter A Valid Ticker")
 			continue //restarts looping looking for correct ticker
 		} //if
 
 		//building the api call with api key
-		//program will aleardy terminate if the API key is not properly if the API key is not
-		//setup as a OS environment variable. we will send the verified ticker as well as
-		//api key to getQuote function to build the request
+		//program will terminate if the API key FINNHUB_API_KEY is empty
+		//api key validity is not checked in this step.
+		//sends valid ticker and api key to getQuote function to build the request
+		//and send the request out
 
 		getQuote(ticker, apiKey) // this is not fully built out so it should just diplay the url
 
