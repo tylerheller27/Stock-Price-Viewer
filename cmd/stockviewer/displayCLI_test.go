@@ -27,7 +27,7 @@ func TestDisplayCLI_endOfFile(t *testing.T) {
 	//True end of file.  no input at all, not even a blank line
 	scanner := bufio.NewScanner(strings.NewReader(""))
 
-	//we only care about what err displayCLI returns so we just discard the ticket with _
+	//we only care about what err displayCLI returns so we just discard the ticker with _
 	_, err := displayCLI(scanner)
 	want := ErrExit
 
@@ -56,6 +56,8 @@ func TestDisplayCLI_emptyLine(t *testing.T) {
 } //func
 
 func TestDisplayCLI_ExitIgnoresCase(t *testing.T) {
+
+	//confirms lowercase "exit" still triggers ErrExit (case-insensitive matching)
 	scanner := bufio.NewScanner(strings.NewReader("exit\n"))
 
 	_, err := displayCLI(scanner)

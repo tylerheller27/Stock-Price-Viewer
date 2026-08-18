@@ -19,8 +19,7 @@ func main() {
 	// data, silently swallowing input.
 	scanner := bufio.NewScanner(os.Stdin)
 
-	// loading api key from config.go
-	apiKey, err := loadAPIKey() // loading api key from env variable from config.go
+	apiKey, err := loadAPIKey() // loading api key from env variable via config.go
 
 	//checking to see if API key is empty and terminating program if it is
 	if errors.Is(err, ErrMissingAPIKey) {
@@ -28,8 +27,9 @@ func main() {
 		return
 	}
 
-	//for loop to continually ask for user input unless an error terminates the program
-	// ex: user types in exit or apiKey env is empty
+	//for loop to continually ask for user input; the only way it exits is
+	//the user typing "exit" (checked below via ErrExit). The missing-API-key
+	//case above already returned before we ever get here.
 
 	for {
 
@@ -51,14 +51,15 @@ func main() {
 			continue //restarts looping looking for correct ticker
 		} //if
 
-		//building the api call with api key
-		//program will terminate if the API key FINNHUB_API_KEY is empty
-		//api key validity is not checked in this step.
-		//sends valid ticker and api key to getQuote function to build the request
-		//and send the request out
-
+		//ticker is valid, apiKey was already confirmed present at startup --
+		//send both to getQuote to build the request and fetch live data.
+		//Note: the key's *validity* isn't checked until Finnhub responds --
+		//an invalid key would surface here as an "unexpected status" error.
 		quote, err := getQuote(ticker, apiKey)
 		if err != nil {
+			//ErrTickerNotFound is Finnhub's "200 OK with all-zero fields"
+			//quirk for an unknown symbol -- everything else (network/status/
+			//parse failures) is a real error, shown as-is.
 			if errors.Is(err, ErrTickerNotFound) {
 				fmt.Println("Ticker not found")
 			} else {

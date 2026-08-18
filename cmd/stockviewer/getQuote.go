@@ -9,7 +9,10 @@ import (
 	"net/url"
 )
 
-var finnhubBaseURL = "https://finnhub.io/api/v1" //used in testing
+// A var, not a const, specifically so tests can point it at a fake
+// httptest server instead of the real Finnhub API -- swap the value,
+// run the test, then restore the original.
+var finnhubBaseURL = "https://finnhub.io/api/v1"
 
 // Finnhub doesn't return an HTTP error for an unknown ticker -- it responds
 // with 200 OK and every price field set to 0 instead. ErrTickerNotFound lets
@@ -28,14 +31,15 @@ type Quote struct {
 
 func getQuote(ticker string, apiKey string) (Quote, error) {
 
-	//Values is just a map
+	// url.Values (a map[string][]string under the hood) builds the query
+	// string via Encode(), which percent-escapes special characters --
+	// safer than manually concatenating "symbol=" + ticker + "&token=" + apiKey.
 	values := url.Values{}
 	values.Set("symbol", ticker)
-	values.Set("token", apiKey)
+	values.Set("token", apiKey) // Finnhub expects the API key as this query param
 
 	fullURL := finnhubBaseURL + "/quote?" + values.Encode()
 
-	//
 	resp, err := http.Get(fullURL)
 	if err != nil {
 		return Quote{}, fmt.Errorf("finnhub: request failed: %w", err)

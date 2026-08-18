@@ -22,6 +22,12 @@ func displayCLI(scanner *bufio.Scanner) (string, error) {
 	}
 	userInput := scanner.Text()
 
+	// Uppercasing here isn't just for the "exit" comparison below -- it's
+	// also what gets returned as the ticker. Verified directly against the
+	// live API: Finnhub's /quote endpoint is case-sensitive and silently
+	// returns all-zero fields for a lowercase symbol (e.g. "voo") while a
+	// real quote comes back for uppercase ("VOO"). Normalizing case here,
+	// once, means every ticker downstream is guaranteed usable.
 	upperCaseInput := strings.ToUpper(userInput)
 
 	// Use a sentinel error to represent the intentional "EXIT" control-flow
@@ -32,6 +38,6 @@ func displayCLI(scanner *bufio.Scanner) (string, error) {
 		return "", ErrExit
 	}
 
-	return upperCaseInput, nil //
+	return upperCaseInput, nil
 
 } //displayCLI
