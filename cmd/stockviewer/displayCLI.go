@@ -3,25 +3,41 @@ package main
 import (
 	"bufio"
 	"errors"
-	"os"
 	"strings"
 )
 
 var ErrExit = errors.New("user requested exit")
 
-func displayCLI() (string, error) {
+func displayCLI(scanner *bufio.Scanner) (string, error) {
 
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
+	// scanner.Scan() returns false when there's no more input (EOF) — e.g.
+	// the user hits Ctrl+D, or piped input runs out. This used to go
+	// unchecked, which caused an infinite loop: once Scan() starts failing,
+	// Text() silently keeps returning "", which never matches "exit" below,
+	// so the program never terminated. Discovered during manual testing
+	// with piped multi-line input, which produced 155 million lines of
+	// output before being killed.
+	if !scanner.Scan() {
+		return "", ErrExit
+	}
 	userInput := scanner.Text()
 
-	exitString := strings.ToUpper(userInput)
+	// Uppercasing here isn't just for the "exit" comparison below -- it's
+	// also what gets returned as the ticker. Verified directly against the
+	// live API: Finnhub's /quote endpoint is case-sensitive and silently
+	// returns all-zero fields for a lowercase symbol (e.g. "voo") while a
+	// real quote comes back for uppercase ("VOO"). Normalizing case here,
+	// once, means every ticker downstream is guaranteed usable.
+	upperCaseInput := strings.ToUpper(userInput)
 
-	//checking to see if user typed "Exit" so we can termineate the program.
-	if exitString == "EXIT" {
+	// Use a sentinel error to represent the intentional "EXIT" control-flow
+	// path. The caller can detect this with errors.Is(err, ErrExit) and
+	// stop the loop without treating it as regular input.
+
+	if upperCaseInput == "EXIT" {
 		return "", ErrExit
 	}
 
-	return userInput, nil
+	return upperCaseInput, nil
 
 } //displayCLI
